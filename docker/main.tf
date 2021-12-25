@@ -14,9 +14,8 @@ notes
         join(", ", ["foo", "bar", "baz"]) # result> foo, bar, baz
         https://www.terraform.io/language/functions/join
 - tips:
-    Remember: Everytime you add a new resource you need to do '$terraform init'
-    Use auto indent and auto format in VSCode:
-    https://linuxpip.org/auto-indent-vscode/ 
+    Remember that everytime you add a new resource you need to do '$terraform init'
+    Use auto indent and auto format in VSCode => https://linuxpip.org/auto-indent-vscode/ 
 
 */
 
