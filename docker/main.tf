@@ -8,6 +8,7 @@ notes
     terraform apply => to deploy, and use '--auto-approve' to skip interactive approval
     terraform fmt => to format the .tf document, and use '-diff' to see the differences
     terraform show => to see the configurations in the tfstate. tip: forward the result to grep or jq
+    terraform outputs => expose the configured outputs
 - functions:
     join
         join(separator, list)
