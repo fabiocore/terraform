@@ -2,6 +2,8 @@
 
 notes 
 
+- install terraform => https://learn.hashicorp.com/tutorials/terraform/install-cli
+
 - commands:
     terraform init => to initialize
     terraform plan => to evaluate the configurations
@@ -9,11 +11,14 @@ notes
     terraform fmt => to format the .tf document, and use '-diff' to see the differences
     terraform show => to see the configurations in the tfstate. tip: forward the result to grep or jq
     terraform outputs => expose the configured outputs
+    terraform state list => list the resources in the state, useful to get some values for output
+
 - functions:
     join
         join(separator, list)
         join(", ", ["foo", "bar", "baz"]) # result> foo, bar, baz
         https://www.terraform.io/language/functions/join
+        
 - tips:
     Remember that everytime you add a new resource you need to do '$terraform init'
     Use auto indent and auto format in VSCode => https://linuxpip.org/auto-indent-vscode/ 
@@ -72,12 +77,53 @@ resource "docker_container" "nodered" {
 */
 
 # output the container name
-output "container_name" {
-  value = docker_container.nodered.name
+output "nodered_container_name" {
+  value       = docker_container.nodered.name
+  description = "nodered container name"
 }
 
 # using join to output the ip + external port
-output "container_url" {
+output "nodered_url" {
   value       = join(":", [docker_container.nodered.ip_address, docker_container.nodered.ports[0].external])
-  description = "Nodered container #1 URL"
+  description = "nodered container #1 URL"
+}
+
+/*
+  count
+  meta-argument that can be used with modules, resource and "data" blocks
+*/
+
+# generate two random_string values
+resource "random_string" "random_values" {
+  count   = 2
+  length  = 4
+  special = false
+  upper   = false
+}
+
+# pull nginx image
+resource "docker_image" "nginx_image" {
+  name = "nginx:latest"
+}
+
+# deploy two node containers using the count meta-argument and getting random generated strings
+resource "docker_container" "nginx_container" {
+  count = 2
+  name  = join("-", ["nginx", random_string.random_values[count.index].result])
+  image = docker_image.nginx_image.latest
+  ports {
+    internal = 8080
+    # external = 8080
+  }
+}
+
+# using output to see the values generated randomly
+output "container_idx0_name" {
+  value       = docker_container.nginx_container[0].name
+  description = "nginx container at index 0"
+}
+
+output "container_idx1_name" {
+  value       = docker_container.nginx_container[1].name
+  description = "nginx container at index 1"
 }
