@@ -12,6 +12,8 @@ notes
     terraform show => to see the configurations in the tfstate. tip: forward the result to grep or jq
     terraform outputs => expose the configured outputs
     terraform state list => list the resources in the state, useful to get some values for output
+    terraform taint <resource> => mark a resource to be replaced
+    terraform untaint <resource> => unmark a resource to be replaced
 
 - functions:
     join
@@ -117,13 +119,14 @@ resource "docker_container" "nginx_container" {
   }
 }
 
-# using output to see the values generated randomly
-output "container_idx0_name" {
-  value       = docker_container.nginx_container[0].name
+# using output with the special * to see the values generated randomly
+output "nginx_container_name" {
+  value       = docker_container.nginx_container[*].name
   description = "nginx container at index 0"
 }
 
-output "container_idx1_name" {
-  value       = docker_container.nginx_container[1].name
-  description = "nginx container at index 1"
+# using output with for expression to generate a list of ip:port generated randomly
+output "nginx_container_ip_port" {
+  value       = [for i in docker_container.nginx_container[*] : join(":", ["http://"], [i.ip_address], i.ports[*]["external"])]
+  description = "the ip and port for each container"
 }
