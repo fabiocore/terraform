@@ -28,7 +28,6 @@ notes
 */
 
 # using docker provider
-
 terraform {
   required_providers {
     docker = {
@@ -39,6 +38,46 @@ terraform {
 }
 
 provider "docker" {}
+
+/*
+  working with variables
+  https://www.terraform.io/language/values/variables
+*/
+
+# Defining a variable within the document
+variable "ext_port" {
+  type    = number
+  default = 1880
+  # optional validation below
+  validation {
+    condition     = var.ext_port == 1880
+    error_message = "Error! The port number needs to be 1880."
+  }
+}
+
+/*
+  Getting an variable from current environment
+  https://www.gitpod.io/docs/environment-variables
+  Do the following for gitpod:
+  $gp env TF_VAR_internal_port #define the variable
+  $eval $(gp env -e) #update in your current terminal/session
+  - when you define a environment variable, always include the prefix TF_VAR_
+  - when getting the variable, remove the prefix like internal_port
+*/
+
+variable "internal_port" {}
+
+output "internal_port" {
+  value       = var.internal_port
+  description = "defined in the envrionement as TF_VAR_internal_port"
+}
+
+# Getting the var from terraform.tfvars
+variable "sensitive_text" {}
+
+output "sensitive_text" {
+  value = var.sensitive_text
+}
 
 /*
   random_string
@@ -63,8 +102,9 @@ resource "docker_container" "nodered" {
   image = docker_image.nodered.latest
   name  = join("-", ["nodered", random_string.random.result])
   ports {
-    internal = 1880
-    # external = 1880
+    # internal = 1880
+    internal = var.internal_port
+    external = var.ext_port
   }
 }
 
