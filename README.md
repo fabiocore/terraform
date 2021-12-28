@@ -1,2 +1,3 @@
-# terraform
-My Terraform playground
+# My Terraform Playground
+
+Playing with Hashicorp Terraform.
