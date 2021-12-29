@@ -80,6 +80,16 @@ output "sensitive_text" {
 }
 
 /*
+  using local-exec to create a volume to be used in docker
+*/
+
+resource "null_resource" "dockervol" {
+  provisioner "local-exec" {
+    command = "mkdir noderedvol/ || true && sudo chown -R 1000:1000 noderedvol"
+  }
+}
+
+/*
   random_string
   Use the random resource provider to gerate random string, numbers or other
   In the code below it's generating a single random string that can be used like => random_string.random.result
@@ -105,6 +115,10 @@ resource "docker_container" "nodered" {
     # internal = 1880
     internal = var.internal_port
     external = var.ext_port
+  }
+  volumes {
+    container_path = "/data"
+    host_path      = "/workspace/terraform/docker/noderedvol"
   }
 }
 
