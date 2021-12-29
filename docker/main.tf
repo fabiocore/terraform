@@ -55,6 +55,27 @@ variable "ext_port" {
   }
 }
 
+variable "nginx_ext_port" {
+  type = list(any)
+}
+
+# defining variables for dev/prod
+
+variable "env" {
+  type        = string
+  description = "var for a env to deploy to"
+  default     = "dev"
+}
+
+variable "nodered_img" {
+  type        = map(string)
+  description = "nodered images"
+  default = {
+    dev  = "nodered/node-red:latest"
+    prod = "nodered/node-red:latest-minimal"
+  }
+}
+
 /*
   Getting an variable from current environment
   https://www.gitpod.io/docs/environment-variables
@@ -104,7 +125,8 @@ resource "random_string" "random" {
 
 # pulls the image
 resource "docker_image" "nodered" {
-  name = "nodered/node-red:latest"
+  # name = "nodered/node-red:latest"
+  name = lookup(var.nodered_img, var.env)
 }
 
 # create a container using join and random_string
@@ -118,7 +140,7 @@ resource "docker_container" "nodered" {
   }
   volumes {
     container_path = "/data"
-    host_path      = "/workspace/terraform/docker/noderedvol"
+    host_path      = "${path.cwd}/noderedvol" #using string interpolation
   }
 }
 
@@ -169,7 +191,8 @@ resource "docker_container" "nginx_container" {
   image = docker_image.nginx_image.latest
   ports {
     internal = 8080
-    # external = 8080
+    # using the variable defined as a list we can use the count.index to fullfill the info below
+    external = var.nginx_ext_port[count.index]
   }
 }
 
